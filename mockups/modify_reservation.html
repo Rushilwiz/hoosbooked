@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoosBooked?</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="m-0 p-0">
+    <div class="flex flex-col h-screen w-full bg-gray-50 font-sans text-slate-800 overflow-hidden">
+      <nav class="h-16 bg-[#232D4B] text-white flex items-center justify-between px-6 shadow-md z-50 shrink-0">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="#fff" d="M21 7a1 1 0 1 1 0 2v10a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2V9a1 1 0 0 1 0-2zM7 11a1 1 0 0 0-1 1v7h2v-7a1 1 0 0 0-1-1m5 0a1 1 0 0 0-1 1v7h2v-7a1 1 0 0 0-1-1m5 0a1 1 0 0 0-1 1v7h2v-7a1 1 0 0 0-1-1m1-7a1 1 0 1 1 0 2H6a1 1 0 0 1 0-2z"/></g></svg>
+          <h1 class="text-xl font-semibold tracking-wide">HoosBooked?</h1>
+        </div>
+
+        <div class="flex items-center gap-5">
+          <button class="relative p-1 hover:bg-white/10 rounded-full transition">
+            <svg class="w-5 h-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-[#E57200] rounded-full border border-[#232D4B]"></span>
+          </button>
+          
+          <div class="flex items-center gap-3 pl-4 border-l border-white/20">
+            <div class="text-right hidden sm:block">
+              <p class="text-sm font-medium leading-none">mst3k</p>
+              <p class="text-xs text-gray-400">Student</p>
+            </div>
+            <div class="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center text-[#232D4B] font-bold">
+              M
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="flex-1 overflow-y-auto bg-gray-50 p-8">
+  <div class="max-w-3xl mx-auto">
+    
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <button class="p-2 bg-white border border-gray-200 rounded-full hover:bg-gray-100 transition shadow-sm text-gray-500">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div>
+          <h2 class="text-2xl font-bold text-[#232D4B]">Edit Reservation</h2>
+          <p class="text-sm text-gray-500">ID: <span class="font-mono text-gray-700">88294</span></p>
+        </div>
+      </div>
+      <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">Upcoming</span>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      
+      <div class="bg-[#232D4B] p-6 text-white flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
+             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-lg">Shannon Library, Room 302</h3>
+            <p class="text-white/70 text-sm">3rd Floor • Standard Study Room</p>
+          </div>
+        </div>
+        <button class="text-xs font-bold bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition">Change Building</button>
+      </div>
+
+      <form class="p-8 space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="md:col-span-1">
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Reservation Date</label>
+            <input type="date" value="2026-02-15" class="w-full bg-blue-50/50 border-2 border-blue-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#E57200] focus:bg-white outline-none transition-all">
+          </div>
+          <div class="md:col-span-1">
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Start Time</label>
+            <select class="w-full bg-blue-50/50 border-2 border-blue-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#E57200] focus:bg-white outline-none transition-all">
+              <option selected>4:00 PM</option>
+              <option>4:30 PM</option>
+              <option>5:00 PM</option>
+            </select>
+          </div>
+          <div class="md:col-span-1">
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">End Time</label>
+            <select class="w-full bg-blue-50/50 border-2 border-blue-100 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#E57200] focus:bg-white outline-none transition-all">
+              <option>5:30 PM</option>
+              <option selected>6:00 PM</option>
+              <option>6:30 PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div>
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Booking Name/Purpose</label>
+            <input type="text" value="CS 3240 Capstone Work" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#E57200] focus:bg-white outline-none transition-all">
+          </div>
+          
+          <div class="flex items-center gap-6 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+            <div class="shrink-0 text-gray-400">
+               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-bold text-[#232D4B]">Group Size</p>
+              <p class="text-xs text-gray-500">You previously noted 4 attendees.</p>
+            </div>
+            <input type="number" value="4" class="w-20 bg-white border border-gray-200 rounded-lg p-2 text-center text-sm font-bold focus:ring-2 focus:ring-[#E57200] outline-none">
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
+          <button type="button" class="text-red-500 text-sm font-bold hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition">
+            Cancel Reservation
+          </button>
+          
+          <div class="flex items-center gap-3 w-full md:w-auto">
+            <button type="button" class="flex-1 md:flex-none px-6 py-3 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200 transition">
+              Discard
+            </button>
+            <button type="submit" class="flex-1 md:flex-none px-8 py-3 bg-[#E57200] text-white font-bold rounded-xl shadow-lg hover:bg-[#c66200] hover:shadow-xl transition-all">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</main>
+
+    </div>
+</body>
+</html>
