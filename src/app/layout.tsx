@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "HoosBooked?",
@@ -18,7 +21,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
 
-      <body className="m-0 p-0">
+      <body className={`m-0 p-0 ${inter.variable}`}>
         <div className="flex flex-col h-screen w-full bg-gray-50 font-sans text-slate-800 overflow-hidden">
           <nav className="h-16 bg-[#232D4B] text-white flex items-center justify-between px-6 shadow-md z-50 shrink-0">
             <div className="flex items-center gap-3">
