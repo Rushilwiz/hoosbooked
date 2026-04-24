@@ -29,18 +29,18 @@ export default function Login() {
             <h2 className="text-2xl font-bold text-[#232D4B]">
               Welcome Back, Hoos
             </h2>
-            <p className="text-gray-500 mt-2">Log in with your UVA email</p>
+            <p className="text-gray-500 mt-2">Log in with your UVA NetBadge username</p>
           </div>
 
           <form className="space-y-5">
             <div>
               <label
                 className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 px-1"
-                >Email</label
+                >Username</label
               >
               <input
                 type="text"
-                placeholder="mst3k@virginia.edu"
+                placeholder="mst3k"
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#E57200] focus:border-transparent focus:bg-white outline-none transition-all placeholder:text-gray-300"
               />
             </div>

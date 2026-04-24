@@ -1,11 +1,12 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db } from "../db";
 import bcrypt from "bcrypt";
+import authConfig from "./auth.config";
+import { getUserByUsername } from "../db/queries";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: DrizzleAdapter(db),
+  ...authConfig,
+  session: { strategy: "jwt" },
   providers: [
     Credentials({
       credentials: {
@@ -13,31 +14,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        if (!credentials) return null;
+        if (!credentials?.username || !credentials?.password) return null;
 
-        const user = await db.query.users.findFirst({
-          where: {
-            username: credentials.username,
-          },
-        });
-
+        const user = await getUserByUsername(credentials.username as string);
         if (!user) return null;
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
+        const match = await bcrypt.compare(
+          credentials.password as string,
           user.password,
         );
 
-        if (!isValid) return null;
+        if (!match) return null;
 
         return {
-          id: user.id,
+          id: String(user.id),
           username: user.username,
         };
       },
     }),
   ],
-  session: {
-    strategy: "jwt",
-  },
 });
