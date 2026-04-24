@@ -14,6 +14,14 @@ import type {
   OpenHours,
 } from "../types/db";
 
+// CREATE TABLE `User` (
+//   `id` int(11) NOT NULL AUTO_INCREMENT,
+//   `username` varchar(255) NOT NULL UNIQUE,
+//   `password` varchar(255) NOT NULL,
+//   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+//   PRIMARY KEY (`id`),
+// );
+
 export const getUserByUsername = async (username: string) => {
   const [rows] = await pool.execute<(User & RowDataPacket)[]>(
     "SELECT id, username, password, created_at FROM `User` WHERE username = ? LIMIT 1",
@@ -30,34 +38,100 @@ export const createUser = async (username: string, passwordHash: string) => {
   return result.insertId;
 };
 
-export type NewBooking = {
-  bookingId: string;
-  userId: number;
-  roomId: number;
-  buildingId: number;
-  date: string;
-  startTime: string;
-  endTime: string;
-  purpose?: string | null;
+export const deleteUser = async (id: number) => {
+  await pool.execute("DELETE FROM `User` WHERE id = ?", [id]);
 };
 
-export const createBooking = async (b: NewBooking) => {
-  await pool.execute<ResultSetHeader>(
-    `INSERT INTO \`Booking\`
-       (booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      b.bookingId,
-      b.purpose ?? null,
-      b.startTime,
-      b.endTime,
-      b.date,
-      b.roomId,
-      b.buildingId,
-      b.userId,
-    ],
+export const updateUserPassword = async (
+  id: number,
+  newPasswordHash: string,
+) => {
+  await pool.execute("UPDATE `User` SET password = ? WHERE id = ?", [
+    newPasswordHash,
+    id,
+  ]);
+};
+
+// CREATE TABLE `User_Email` (
+//   `user_id` varchar(255) NOT NULL,
+//   `email` varchar(255) NOT NULL
+// );
+
+export const getUserEmailByUserId = async (userId: number) => {
+  const [rows] = await pool.execute<UserEmail & RowDataPacket[]>(
+    "SELECT user_id, email FROM User_Email WHERE user_id = ?",
+    [userId],
   );
-  return b.bookingId;
+  return rows[0] ?? null;
+};
+
+export const setUserEmail = async (userId: number, email: string) => {
+  await pool.execute(
+    `INSERT INTO User_Email (user_id, email) VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE email = VALUES(email)`,
+    [userId, email],
+  );
+};
+
+export const deleteUserEmail = async (userId: number) => {
+  await pool.execute("DELETE FROM User_Email WHERE user_id = ?", [userId]);
+};
+
+// CREATE TABLE `User_Notification_Preference` (
+//   `user_id` varchar(255) NOT NULL,
+//   `notify_by_mail` tinyint(1) NOT NULL DEFAULT 1,
+//   `notify_by_text` tinyint(1) NOT NULL DEFAULT 1,
+//   PRIMARY KEY (`user_id`)
+// );
+
+export const getUserNotificationPreferenceByUserId = async (userId: number) => {
+  const [rows] = await pool.execute<
+    UserNotificationPreference & RowDataPacket[]
+  >(
+    "SELECT user_id, notify_by_mail, notify_by_text FROM User_Notification_Preference WHERE user_id = ?",
+    [userId],
+  );
+  return rows[0] ?? null;
+};
+
+export const setUserNotificationPreference = async (
+  userId: number,
+  notifyByMail: boolean,
+  notifyByText: boolean,
+) => {
+  await pool.execute(
+    `INSERT INTO User_Notification_Preference (user_id, notify_by_mail, notify_by_text)
+     VALUES (?, ?, ?)
+     ON DUPLICATE KEY UPDATE notify_by_mail = VALUES(notify_by_mail), notify_by_text = VALUES(notify_by_text)`,
+    [userId, notifyByMail ? 1 : 0, notifyByText ? 1 : 0],
+  );
+};
+
+// CREATE TABLE `User_PhoneNumber` (
+//   `user_id` varchar(255) NOT NULL,
+//   `phone` varchar(20) NOT NULL
+// );
+
+export const getUserPhoneNumberByUserId = async (userId: number) => {
+  const [rows] = await pool.execute<UserPhoneNumber & RowDataPacket[]>(
+    "SELECT user_id, phone FROM User_PhoneNumber WHERE user_id = ?",
+    [userId],
+  );
+  return rows[0] ?? null;
+};
+
+export const setUserPhoneNumber = async (userId: number, phone: string) => {
+  await pool.execute(
+    `INSERT INTO User_PhoneNumber (user_id, phone) VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE phone = VALUES(phone)`,
+    [userId, phone],
+  );
+};
+
+export const deleteUserPhoneNumber = async (userId: number) => {
+  await pool.execute("DELETE FROM User_PhoneNumber WHERE user_id = ?", [
+    userId,
+  ]);
 };
 
 // CREATE TABLE `Amenity` (
@@ -182,10 +256,11 @@ export const updateBuilding = async (
   name: string,
   address: string,
 ) => {
-  await pool.execute(
-    "UPDATE Building SET name = ?, address = ? WHERE id = ?",
-    [name, address, id],
-  );
+  await pool.execute("UPDATE Building SET name = ?, address = ? WHERE id = ?", [
+    name,
+    address,
+    id,
+  ]);
 };
 
 // CREATE TABLE `Room` (
@@ -253,6 +328,43 @@ export const updateRoom = async (
 //   UNIQUE KEY `unique_booking` (`room_id`,`building_id`,`date`,`start_time`,`end_time`)
 // );
 
+export const getBookingsByUserId = async (userId: number) => {
+  const [rows] = await pool.execute<Booking & RowDataPacket[]>(
+    "SELECT booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id FROM Booking WHERE user_id = ?",
+    [userId],
+  );
+  return rows;
+};
+
+export const getBookingById = async (bookingId: string) => {
+  const [rows] = await pool.execute<Booking & RowDataPacket[]>(
+    "SELECT booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id FROM Booking WHERE booking_id = ?",
+    [bookingId],
+  );
+  return rows[0] ?? null;
+};
+
+export const deleteBooking = async (bookingId: string) => {
+  await pool.execute("DELETE FROM Booking WHERE booking_id = ?", [bookingId]);
+};
+
+export const updateBooking = async (
+  bookingId: string,
+  purpose: string | null,
+  startTime: string,
+  endTime: string,
+  date: string,
+  roomId: number,
+  buildingId: number,
+) => {
+  await pool.execute(
+    `UPDATE Booking
+     SET purpose = ?, start_time = ?, end_time = ?, date = ?, room_id = ?, building_id = ?
+     WHERE booking_id = ?`,
+    [purpose ?? null, startTime, endTime, date, roomId, buildingId, bookingId],
+  );
+};
+
 // CREATE TABLE `Notifications` (
 //   `notification_id` varchar(255) NOT NULL,
 //   `user_id` varchar(255) NOT NULL,
@@ -262,12 +374,73 @@ export const updateRoom = async (
 //   PRIMARY KEY (`notification_id`)
 // );
 
+export const getNotificationsByUserId = async (userId: number) => {
+  const [rows] = await pool.execute<Notification & RowDataPacket[]>(
+    "SELECT notification_id, user_id, message, viewed, created_at FROM Notifications WHERE user_id = ?",
+    [userId],
+  );
+  return rows;
+};
+
+export const createNotification = async (
+  notificationId: string,
+  userId: number,
+  message: string,
+) => {
+  await pool.execute(
+    "INSERT INTO Notifications (notification_id, user_id, message) VALUES (?, ?, ?)",
+    [notificationId, userId, message],
+  );
+};
+
+export const markNotificationAsViewed = async (notificationId: string) => {
+  await pool.execute(
+    "UPDATE Notifications SET viewed = 1 WHERE notification_id = ?",
+    [notificationId],
+  );
+};
+
+export const deleteNotification = async (notificationId: string) => {
+  await pool.execute("DELETE FROM Notifications WHERE notification_id = ?", [
+    notificationId,
+  ]);
+};
+
 // CREATE TABLE `Open_Hours` (
 //   `building_id` int(11) NOT NULL,
 //   `day` varchar(255) NOT NULL,
 //   `open_time` timestamp NOT NULL,
 //   `closing_time` timestamp NOT NULL
 // );
+
+export const getOpenHoursByBuildingId = async (buildingId: number) => {
+  const [rows] = await pool.execute<OpenHours & RowDataPacket[]>(
+    "SELECT building_id, day, open_time, closing_time FROM Open_Hours WHERE building_id = ?",
+    [buildingId],
+  );
+  return rows;
+};
+
+export const setOpenHours = async (
+  buildingId: number,
+  day: string,
+  openTime: string,
+  closingTime: string,
+) => {
+  await pool.execute(
+    `INSERT INTO Open_Hours (building_id, day, open_time, closing_time)
+     VALUES (?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE open_time = VALUES(open_time), closing_time = VALUES(closing_time)`,
+    [buildingId, day, openTime, closingTime],
+  );
+};
+
+export const deleteOpenHours = async (buildingId: number, day: string) => {
+  await pool.execute(
+    "DELETE FROM Open_Hours WHERE building_id = ? AND day = ?",
+    [buildingId, day],
+  );
+};
 
 // CREATE TABLE `Rating` (
 //   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -279,27 +452,45 @@ export const updateRoom = async (
 //   PRIMARY KEY (`id`)
 // );
 
-// CREATE TABLE `User` (
-//   `id` int(11) NOT NULL AUTO_INCREMENT,
-//   `username` varchar(255) NOT NULL UNIQUE,
-//   `password` varchar(255) NOT NULL,
-//   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-//   PRIMARY KEY (`id`),
-// );
+export const getRatingsByRoomId = async (
+  roomId: number,
+  buildingId: number,
+) => {
+  const [rows] = await pool.execute<Rating & RowDataPacket[]>(
+    "SELECT id, room_id, building_id, user_id, value, description FROM Rating WHERE room_id = ? AND building_id = ?",
+    [roomId, buildingId],
+  );
+  return rows;
+};
 
-// CREATE TABLE `User_Email` (
-//   `user_id` varchar(255) NOT NULL,
-//   `email` varchar(255) NOT NULL
-// );
+export const createRating = async (
+  roomId: number,
+  buildingId: number,
+  userId: number,
+  value: number,
+  description?: string,
+) => {
+  const [result] = await pool.execute<ResultSetHeader>(
+    "INSERT INTO Rating (room_id, building_id, user_id, value, description) VALUES (?, ?, ?, ?, ?)",
+    [roomId, buildingId, userId, value, description ?? null],
+  );
+  return result.insertId;
+};
 
-// CREATE TABLE `User_Notification_Preference` (
-//   `user_id` varchar(255) NOT NULL,
-//   `notify_by_mail` tinyint(1) NOT NULL DEFAULT 1,
-//   `notify_by_text` tinyint(1) NOT NULL DEFAULT 1,
-//   PRIMARY KEY (`user_id`)
-// );
+export const deleteRating = async (id: number) => {
+  await pool.execute("DELETE FROM Rating WHERE id = ?", [id]);
+};
 
-// CREATE TABLE `User_PhoneNumber` (
-//   `user_id` varchar(255) NOT NULL,
-//   `phone` varchar(20) NOT NULL
-// );
+export const updateRating = async (
+  id: number,
+  roomId: number,
+  buildingId: number,
+  userId: number,
+  value: number,
+  description?: string,
+) => {
+  await pool.execute(
+    "UPDATE Rating SET room_id = ?, building_id = ?, user_id = ?, value = ?, description = ? WHERE id = ?",
+    [roomId, buildingId, userId, value, description ?? null, id],
+  );
+};
