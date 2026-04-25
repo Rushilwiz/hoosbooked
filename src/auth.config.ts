@@ -1,9 +1,10 @@
 import type { NextAuthConfig } from "next-auth";
 
-const PUBLIC_PATHS = ["/login", "/register", "/api/auth/register"];
+const PUBLIC_PATHS = ["/login", "/register"];
 
 export default {
   providers: [],
+  secret: process.env.BETTER_AUTH_SECRET,
   pages: {
     signIn: "/login",
   },

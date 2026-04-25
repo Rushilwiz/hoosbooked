@@ -1,8 +1,49 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Register() {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const onSubmit = async (formData: FormData) => {
+    setError(null);
+
+    const username = String(formData.get("username") ?? "");
+    const password = String(formData.get("password") ?? "");
+    const confirm = String(formData.get("confirm") ?? "");
+
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setSubmitting(true);
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    setSubmitting(false);
+
+    if (res.status === 409) {
+      setError("Username already taken.");
+      return;
+    }
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(body.error ?? "Registration failed. Please try again.");
+      return;
+    }
+
+    router.push("/login");
+  };
+
   return (
-    <main className="flex flex-1 items-center justify-center p-6 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px]">
+    <main className="flex flex-1 items-center justify-center p-6 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[24px_24px]">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 animate-in fade-in zoom-in duration-300">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-50 rounded-full mb-4">
@@ -28,13 +69,14 @@ export default function Register() {
           </p>
         </div>
 
-        <form className="space-y-5">
+        <form className="space-y-5" action={onSubmit}>
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 px-1">
               Username
             </label>
             <input
               type="text"
+              name="username"
               placeholder="mst3k"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#E57200] focus:border-transparent focus:bg-white outline-none transition-all placeholder:text-gray-300"
             />
@@ -46,6 +88,7 @@ export default function Register() {
             </label>
             <input
               type="password"
+              name="password"
               placeholder="••••••••"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#E57200] focus:border-transparent focus:bg-white outline-none transition-all placeholder:text-gray-300"
             />
@@ -56,25 +99,33 @@ export default function Register() {
             </label>
             <input
               type="password"
+              name="confirm"
               placeholder="••••••••"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#E57200] focus:border-transparent focus:bg-white outline-none transition-all placeholder:text-gray-300"
             />
           </div>
 
+          {error && (
+            <p className="text-sm font-light bg-red-200 rounded-2xl p-3">
+              {error}
+            </p>
+          )}
+
           <div className="flex items-right justify-between px-1">
-            <a
-              href="#"
+            <Link
+              href="/login"
               className="text-sm text-right font-medium text-[#232D4B] hover:text-[#E57200] transition"
             >
               Have an account already?
-            </a>
+            </Link>
           </div>
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-[#232D4B] text-white font-bold rounded-xl shadow-lg hover:bg-[#1a2138] hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:shadow-md transition-all"
+            disabled={submitting}
+            className="w-full py-3.5 bg-[#232D4B] text-white font-bold rounded-xl shadow-lg hover:bg-[#1a2138] hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
-            Sign In
+            {submitting ? "Creating..." : "Sign Up"}
           </button>
         </form>
       </div>

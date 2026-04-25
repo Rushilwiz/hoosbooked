@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { auth } from "@/auth";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -9,11 +10,13 @@ export const metadata: Metadata = {
   description: "Centralized and intuitive room booking at the university.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en" className={`h-full antialiased`}>
       <head>
@@ -78,15 +81,19 @@ export default function RootLayout({
                 <span className="absolute top-1 right-1 w-2 h-2 bg-[#E57200] rounded-full border border-[#232D4B]"></span>
               </button>
 
-              <div className="flex items-center gap-3 pl-4 border-l border-white/20">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium leading-none">mst3k</p>
-                  <p className="text-xs text-gray-400">Student</p>
+              {session?.user && (
+                <div className="flex items-center gap-3 pl-4 border-l border-white/20">
+                  <div className="text-right hidden sm:block">
+                    <p className="text-sm font-medium leading-none">
+                      {session.user.username}
+                    </p>
+                    <p className="text-xs text-gray-400">Student</p>
+                  </div>
+                  <div className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center text-[#232D4B] font-bold">
+                    {(session.user.username ?? "U").charAt(0)}
+                  </div>
                 </div>
-                <div className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center text-[#232D4B] font-bold">
-                  M
-                </div>
-              </div>
+              )}
             </div>
           </nav>
 

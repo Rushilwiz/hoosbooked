@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import authConfig from "./auth.config";
-import { getUserByUsername } from "../db/queries";
+import { getUserByUsername } from "./db/queries";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -10,8 +10,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "password" },
+        username: { label: "Username", type: "text", placeholder: "mst3k" },
+        password: { label: "Password", type: "password", placeholder: "••••••••" },
       },
       authorize: async (credentials) => {
         if (!credentials?.username || !credentials?.password) return null;

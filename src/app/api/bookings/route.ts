@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { auth } from "@/lib/auth";
+import { auth } from "@/auth";
 import { createBooking } from "@/db/queries";
-
-
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -38,7 +36,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ bookingId }, { status: 201 });
   } catch (err) {
     if ((err as { code?: string }).code === "ER_DUP_ENTRY") {
-      return NextResponse.json({ error: "time slot already booked" }, { status: 409 });
+      return NextResponse.json(
+        { error: "time slot already booked" },
+        { status: 409 },
+      );
     }
     throw err;
   }

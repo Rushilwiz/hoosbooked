@@ -1,6 +1,11 @@
+import { auth } from "@/auth";
 import Image from "next/image";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
+  if (!session?.user) return null;
+
   return (
     <main className="flex flex-1 overflow-hidden">
       <aside className="w-96 bg-white border-r border-gray-200 flex flex-col shadow-xl z-20">

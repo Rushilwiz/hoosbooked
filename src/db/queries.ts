@@ -14,7 +14,7 @@ import type {
   OpenHours,
 } from "../types/db";
 
-// CREATE TABLE `User` (
+// `User` (
 //   `id` int(11) NOT NULL AUTO_INCREMENT,
 //   `username` varchar(255) NOT NULL UNIQUE,
 //   `password` varchar(255) NOT NULL,
@@ -52,7 +52,7 @@ export const updateUserPassword = async (
   ]);
 };
 
-// CREATE TABLE `User_Email` (
+// `User_Email` (
 //   `user_id` varchar(255) NOT NULL,
 //   `email` varchar(255) NOT NULL
 // );
@@ -77,7 +77,7 @@ export const deleteUserEmail = async (userId: number) => {
   await pool.execute("DELETE FROM User_Email WHERE user_id = ?", [userId]);
 };
 
-// CREATE TABLE `User_Notification_Preference` (
+// `User_Notification_Preference` (
 //   `user_id` varchar(255) NOT NULL,
 //   `notify_by_mail` tinyint(1) NOT NULL DEFAULT 1,
 //   `notify_by_text` tinyint(1) NOT NULL DEFAULT 1,
@@ -107,7 +107,7 @@ export const setUserNotificationPreference = async (
   );
 };
 
-// CREATE TABLE `User_PhoneNumber` (
+// `User_PhoneNumber` (
 //   `user_id` varchar(255) NOT NULL,
 //   `phone` varchar(20) NOT NULL
 // );
@@ -134,7 +134,7 @@ export const deleteUserPhoneNumber = async (userId: number) => {
   ]);
 };
 
-// CREATE TABLE `Amenity` (
+// `Amenity` (
 //   `id` int(11) NOT NULL AUTO_INCREMENT,
 //   `name` varchar(255) NOT NULL,
 //   `description` varchar(255) DEFAULT NULL,
@@ -177,7 +177,7 @@ export const updateAmenity = async (
   );
 };
 
-// CREATE TABLE `Room_Amenity` (
+// `Room_Amenity` (
 //   `room_id` int(11) NOT NULL,
 //   `building_id` int(11) NOT NULL,
 //   `amenity_id` int(11) NOT NULL
@@ -219,7 +219,7 @@ export const removeAmenityFromRoom = async (
   );
 };
 
-// CREATE TABLE `Building` (
+// `Building` (
 //   `id` int(11) NOT NULL AUTO_INCREMENT,
 //   `name` varchar(255) NOT NULL,
 //   `address` varchar(255) NOT NULL,
@@ -263,7 +263,7 @@ export const updateBuilding = async (
   ]);
 };
 
-// CREATE TABLE `Room` (
+// `Room` (
 //   `id` int(11) NOT NULL AUTO_INCREMENT,
 //   `number` int(11) NOT NULL,
 //   `building_id` int(11) NOT NULL,
@@ -315,7 +315,7 @@ export const updateRoom = async (
   );
 };
 
-// CREATE TABLE `Booking` (
+// `Booking` (
 //   `booking_id` varchar(255) NOT NULL,
 //   `purpose` text DEFAULT NULL,
 //   `start_time` timestamp NOT NULL,
@@ -365,7 +365,7 @@ export const updateBooking = async (
   );
 };
 
-// CREATE TABLE `Notifications` (
+// `Notifications` (
 //   `notification_id` varchar(255) NOT NULL,
 //   `user_id` varchar(255) NOT NULL,
 //   `message` text NOT NULL,
@@ -406,7 +406,7 @@ export const deleteNotification = async (notificationId: string) => {
   ]);
 };
 
-// CREATE TABLE `Open_Hours` (
+// `Open_Hours` (
 //   `building_id` int(11) NOT NULL,
 //   `day` varchar(255) NOT NULL,
 //   `open_time` timestamp NOT NULL,
@@ -442,7 +442,7 @@ export const deleteOpenHours = async (buildingId: number, day: string) => {
   );
 };
 
-// CREATE TABLE `Rating` (
+// `Rating` (
 //   `id` int(11) NOT NULL AUTO_INCREMENT,
 //   `room_id` int(11) NOT NULL,
 //   `building_id` int(11) NOT NULL,
