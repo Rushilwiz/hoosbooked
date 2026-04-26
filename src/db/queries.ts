@@ -25,7 +25,7 @@ import type {
 export const getUserByUsername = async (username: string) => {
   const [rows] = await pool.execute<(User & RowDataPacket)[]>(
     "SELECT id, username, password, created_at FROM `User` WHERE username = ? LIMIT 1",
-    [username],
+    [username]
   );
   return rows[0] ?? null;
 };
@@ -33,7 +33,7 @@ export const getUserByUsername = async (username: string) => {
 export const createUser = async (username: string, passwordHash: string) => {
   const [result] = await pool.execute<ResultSetHeader>(
     "INSERT INTO `User` (username, password) VALUES (?, ?)",
-    [username, passwordHash],
+    [username, passwordHash]
   );
   return result.insertId;
 };
@@ -44,7 +44,7 @@ export const deleteUser = async (id: number) => {
 
 export const updateUserPassword = async (
   id: number,
-  newPasswordHash: string,
+  newPasswordHash: string
 ) => {
   await pool.execute("UPDATE `User` SET password = ? WHERE id = ?", [
     newPasswordHash,
@@ -60,7 +60,7 @@ export const updateUserPassword = async (
 export const getUserEmailByUserId = async (userId: number) => {
   const [rows] = await pool.execute<UserEmail & RowDataPacket[]>(
     "SELECT user_id, email FROM User_Email WHERE user_id = ?",
-    [userId],
+    [userId]
   );
   return rows[0] ?? null;
 };
@@ -69,7 +69,7 @@ export const setUserEmail = async (userId: number, email: string) => {
   await pool.execute(
     `INSERT INTO User_Email (user_id, email) VALUES (?, ?)
      ON DUPLICATE KEY UPDATE email = VALUES(email)`,
-    [userId, email],
+    [userId, email]
   );
 };
 
@@ -89,7 +89,7 @@ export const getUserNotificationPreferenceByUserId = async (userId: number) => {
     UserNotificationPreference & RowDataPacket[]
   >(
     "SELECT user_id, notify_by_mail, notify_by_text FROM User_Notification_Preference WHERE user_id = ?",
-    [userId],
+    [userId]
   );
   return rows[0] ?? null;
 };
@@ -97,13 +97,13 @@ export const getUserNotificationPreferenceByUserId = async (userId: number) => {
 export const setUserNotificationPreference = async (
   userId: number,
   notifyByMail: boolean,
-  notifyByText: boolean,
+  notifyByText: boolean
 ) => {
   await pool.execute(
     `INSERT INTO User_Notification_Preference (user_id, notify_by_mail, notify_by_text)
      VALUES (?, ?, ?)
      ON DUPLICATE KEY UPDATE notify_by_mail = VALUES(notify_by_mail), notify_by_text = VALUES(notify_by_text)`,
-    [userId, notifyByMail ? 1 : 0, notifyByText ? 1 : 0],
+    [userId, notifyByMail ? 1 : 0, notifyByText ? 1 : 0]
   );
 };
 
@@ -115,7 +115,7 @@ export const setUserNotificationPreference = async (
 export const getUserPhoneNumberByUserId = async (userId: number) => {
   const [rows] = await pool.execute<UserPhoneNumber & RowDataPacket[]>(
     "SELECT user_id, phone FROM User_PhoneNumber WHERE user_id = ?",
-    [userId],
+    [userId]
   );
   return rows[0] ?? null;
 };
@@ -124,7 +124,7 @@ export const setUserPhoneNumber = async (userId: number, phone: string) => {
   await pool.execute(
     `INSERT INTO User_PhoneNumber (user_id, phone) VALUES (?, ?)
      ON DUPLICATE KEY UPDATE phone = VALUES(phone)`,
-    [userId, phone],
+    [userId, phone]
   );
 };
 
@@ -149,7 +149,7 @@ export const getAllAmenities = async () => {
 export const getAmenityById = async (id: number) => {
   const [rows] = await pool.execute<Amenity & RowDataPacket[]>(
     "SELECT id, name, description FROM Amenity WHERE id = ?",
-    [id],
+    [id]
   );
   return rows[0] ?? null;
 };
@@ -157,7 +157,7 @@ export const getAmenityById = async (id: number) => {
 export const createAmenity = async (name: string, description?: string) => {
   const [result] = await pool.execute<ResultSetHeader>(
     "INSERT INTO Amenity (name, description) VALUES (?, ?)",
-    [name, description ?? null],
+    [name, description ?? null]
   );
   return result.insertId;
 };
@@ -169,11 +169,11 @@ export const deleteAmenity = async (id: number) => {
 export const updateAmenity = async (
   id: number,
   name: string,
-  description?: string,
+  description?: string
 ) => {
   await pool.execute(
     "UPDATE Amenity SET name = ?, description = ? WHERE id = ?",
-    [name, description ?? null, id],
+    [name, description ?? null, id]
   );
 };
 
@@ -185,14 +185,14 @@ export const updateAmenity = async (
 
 export const getAmenityByRoomId = async (
   roomId: number,
-  buildingId: number,
+  buildingId: number
 ) => {
   const [rows] = await pool.execute(
     `SELECT a.id, a.name, a.description
      FROM Room_Amenity ra
      JOIN Amenity a ON ra.amenity_id = a.id
      WHERE ra.room_id = ? AND ra.building_id = ?`,
-    [roomId, buildingId],
+    [roomId, buildingId]
   );
   return rows;
 };
@@ -200,22 +200,22 @@ export const getAmenityByRoomId = async (
 export const addAmenityToRoom = async (
   roomId: number,
   buildingId: number,
-  amenityId: number,
+  amenityId: number
 ) => {
   await pool.execute(
     "INSERT INTO Room_Amenity (room_id, building_id, amenity_id) VALUES (?, ?, ?)",
-    [roomId, buildingId, amenityId],
+    [roomId, buildingId, amenityId]
   );
 };
 
 export const removeAmenityFromRoom = async (
   roomId: number,
   buildingId: number,
-  amenityId: number,
+  amenityId: number
 ) => {
   await pool.execute(
     "DELETE FROM Room_Amenity WHERE room_id = ? AND building_id = ? AND amenity_id = ?",
-    [roomId, buildingId, amenityId],
+    [roomId, buildingId, amenityId]
   );
 };
 
@@ -234,7 +234,7 @@ export const getAllBuildings = async () => {
 export const getBuildingById = async (id: number) => {
   const [rows] = await pool.execute<Building & RowDataPacket[]>(
     "SELECT id, name, address FROM Building WHERE id = ?",
-    [id],
+    [id]
   );
   return rows[0] ?? null;
 };
@@ -242,7 +242,7 @@ export const getBuildingById = async (id: number) => {
 export const createBuilding = async (name: string, address: string) => {
   const [result] = await pool.execute<ResultSetHeader>(
     "INSERT INTO Building (name, address) VALUES (?, ?)",
-    [name, address],
+    [name, address]
   );
   return result.insertId;
 };
@@ -254,7 +254,7 @@ export const deleteBuilding = async (id: number) => {
 export const updateBuilding = async (
   id: number,
   name: string,
-  address: string,
+  address: string
 ) => {
   await pool.execute("UPDATE Building SET name = ?, address = ? WHERE id = ?", [
     name,
@@ -274,7 +274,7 @@ export const updateBuilding = async (
 export const getRoomsByBuildingId = async (buildingId: number) => {
   const [rows] = await pool.execute<Room & RowDataPacket[]>(
     "SELECT id, number, building_id, capacity FROM Room WHERE building_id = ?",
-    [buildingId],
+    [buildingId]
   );
   return rows;
 };
@@ -282,7 +282,7 @@ export const getRoomsByBuildingId = async (buildingId: number) => {
 export const getRoomById = async (id: number) => {
   const [rows] = await pool.execute<Room & RowDataPacket[]>(
     "SELECT id, number, building_id, capacity FROM Room WHERE id = ?",
-    [id],
+    [id]
   );
   return rows[0] ?? null;
 };
@@ -290,11 +290,11 @@ export const getRoomById = async (id: number) => {
 export const createRoom = async (
   number: number,
   buildingId: number,
-  capacity: number,
+  capacity: number
 ) => {
   const [result] = await pool.execute<ResultSetHeader>(
     "INSERT INTO Room (number, building_id, capacity) VALUES (?, ?, ?)",
-    [number, buildingId, capacity],
+    [number, buildingId, capacity]
   );
   return result.insertId;
 };
@@ -307,11 +307,11 @@ export const updateRoom = async (
   id: number,
   number: number,
   buildingId: number,
-  capacity: number,
+  capacity: number
 ) => {
   await pool.execute(
     "UPDATE Room SET number = ?, building_id = ?, capacity = ? WHERE id = ?",
-    [number, buildingId, capacity, id],
+    [number, buildingId, capacity, id]
   );
 };
 
@@ -331,7 +331,7 @@ export const updateRoom = async (
 export const getBookingsByUserId = async (userId: number) => {
   const [rows] = await pool.execute<Booking & RowDataPacket[]>(
     "SELECT booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id FROM Booking WHERE user_id = ?",
-    [userId],
+    [userId]
   );
   return rows;
 };
@@ -339,7 +339,7 @@ export const getBookingsByUserId = async (userId: number) => {
 export const getBookingById = async (bookingId: string) => {
   const [rows] = await pool.execute<Booking & RowDataPacket[]>(
     "SELECT booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id FROM Booking WHERE booking_id = ?",
-    [bookingId],
+    [bookingId]
   );
   return rows[0] ?? null;
 };
@@ -355,13 +355,13 @@ export const updateBooking = async (
   endTime: string,
   date: string,
   roomId: number,
-  buildingId: number,
+  buildingId: number
 ) => {
   await pool.execute(
     `UPDATE Booking
      SET purpose = ?, start_time = ?, end_time = ?, date = ?, room_id = ?, building_id = ?
      WHERE booking_id = ?`,
-    [purpose ?? null, startTime, endTime, date, roomId, buildingId, bookingId],
+    [purpose ?? null, startTime, endTime, date, roomId, buildingId, bookingId]
   );
 };
 
@@ -377,7 +377,7 @@ export const updateBooking = async (
 export const getNotificationsByUserId = async (userId: number) => {
   const [rows] = await pool.execute<Notification & RowDataPacket[]>(
     "SELECT notification_id, user_id, message, viewed, created_at FROM Notifications WHERE user_id = ?",
-    [userId],
+    [userId]
   );
   return rows;
 };
@@ -385,18 +385,18 @@ export const getNotificationsByUserId = async (userId: number) => {
 export const createNotification = async (
   notificationId: string,
   userId: number,
-  message: string,
+  message: string
 ) => {
   await pool.execute(
     "INSERT INTO Notifications (notification_id, user_id, message) VALUES (?, ?, ?)",
-    [notificationId, userId, message],
+    [notificationId, userId, message]
   );
 };
 
 export const markNotificationAsViewed = async (notificationId: string) => {
   await pool.execute(
     "UPDATE Notifications SET viewed = 1 WHERE notification_id = ?",
-    [notificationId],
+    [notificationId]
   );
 };
 
@@ -416,7 +416,7 @@ export const deleteNotification = async (notificationId: string) => {
 export const getOpenHoursByBuildingId = async (buildingId: number) => {
   const [rows] = await pool.execute<OpenHours & RowDataPacket[]>(
     "SELECT building_id, day, open_time, closing_time FROM Open_Hours WHERE building_id = ?",
-    [buildingId],
+    [buildingId]
   );
   return rows;
 };
@@ -425,20 +425,20 @@ export const setOpenHours = async (
   buildingId: number,
   day: string,
   openTime: string,
-  closingTime: string,
+  closingTime: string
 ) => {
   await pool.execute(
     `INSERT INTO Open_Hours (building_id, day, open_time, closing_time)
      VALUES (?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE open_time = VALUES(open_time), closing_time = VALUES(closing_time)`,
-    [buildingId, day, openTime, closingTime],
+    [buildingId, day, openTime, closingTime]
   );
 };
 
 export const deleteOpenHours = async (buildingId: number, day: string) => {
   await pool.execute(
     "DELETE FROM Open_Hours WHERE building_id = ? AND day = ?",
-    [buildingId, day],
+    [buildingId, day]
   );
 };
 
@@ -454,11 +454,11 @@ export const deleteOpenHours = async (buildingId: number, day: string) => {
 
 export const getRatingsByRoomId = async (
   roomId: number,
-  buildingId: number,
+  buildingId: number
 ) => {
   const [rows] = await pool.execute<Rating & RowDataPacket[]>(
     "SELECT id, room_id, building_id, user_id, value, description FROM Rating WHERE room_id = ? AND building_id = ?",
-    [roomId, buildingId],
+    [roomId, buildingId]
   );
   return rows;
 };
@@ -468,11 +468,11 @@ export const createRating = async (
   buildingId: number,
   userId: number,
   value: number,
-  description?: string,
+  description?: string
 ) => {
   const [result] = await pool.execute<ResultSetHeader>(
     "INSERT INTO Rating (room_id, building_id, user_id, value, description) VALUES (?, ?, ?, ?, ?)",
-    [roomId, buildingId, userId, value, description ?? null],
+    [roomId, buildingId, userId, value, description ?? null]
   );
   return result.insertId;
 };
@@ -487,10 +487,38 @@ export const updateRating = async (
   buildingId: number,
   userId: number,
   value: number,
-  description?: string,
+  description?: string
 ) => {
   await pool.execute(
     "UPDATE Rating SET room_id = ?, building_id = ?, user_id = ?, value = ?, description = ? WHERE id = ?",
-    [roomId, buildingId, userId, value, description ?? null, id],
+    [roomId, buildingId, userId, value, description ?? null, id]
   );
+};
+
+export const createBooking = async (
+  bookingId: string,
+  purpose: string | null,
+  startTime: string,
+  endTime: string,
+  date: string,
+  roomId: number,
+  buildingId: number,
+  userId: number
+) => {
+  await pool.execute(
+    `INSERT INTO Booking (booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      bookingId,
+      purpose ?? null,
+      startTime,
+      endTime,
+      date,
+      roomId,
+      buildingId,
+      userId,
+    ]
+  );
+
+  return bookingId;
 };
