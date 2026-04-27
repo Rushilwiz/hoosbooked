@@ -28,7 +28,7 @@ CREATE TABLE
 CREATE TABLE
   `Room` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `number` int NOT NULL,
+    `number` varchar(255) NULL,
     `building_id` int NOT NULL,
     `capacity` int NOT NULL,
     PRIMARY KEY (id, building_id),
@@ -128,5 +128,8 @@ CREATE TABLE
     PRIMARY KEY (`user_id`),
     FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE
   );
+
+DELIMITER $$ CREATE TRIGGER makeBlankPreference AFTER INSERT ON User FOR EACH ROW BEGIN INSERT INTO User_Notification_Preference VALUES (NEW.id, 1, 1); END $$ DELIMITER ;
+
 
 COMMIT;

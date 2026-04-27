@@ -2,10 +2,7 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { deleteUser, updateUserPassword, getUserById } from "@/db/queries";
-import {
-  badRequest,
-  readJson,
-} from "../_utils";
+import { badRequest, readJson } from "../_utils";
 
 export const GET = auth(async function GET(req) {
   const id = Number(req.auth?.user?.id);
@@ -45,7 +42,9 @@ export const DELETE = auth(async function DELETE(req) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  console.log("deleting user with id", id);
+
   await deleteUser(id);
 
-  return new NextResponse(null, { status: 204 });
+  return NextResponse.json({ id }, { status: 204 });
 });

@@ -9,7 +9,6 @@ import {
   getRoomById,
 } from "@/db/queries";
 import { badRequest, notFound, parseInteger, readJson } from "../../../_utils";
-import { get } from "http";
 
 export const GET = auth(
   async (req, { params }: { params: Promise<{ id: string }> }) => {
