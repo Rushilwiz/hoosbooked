@@ -42,6 +42,7 @@ CREATE TABLE
     `start_time` timestamp NOT NULL,
     `end_time` timestamp NOT NULL,
     `date` timestamp NOT NULL,
+    `participants` int NULL DEFAULT 1,
     `room_id` int NOT NULL,
     `building_id` int NOT NULL,
     `user_id` int NOT NULL,
@@ -72,8 +73,8 @@ CREATE TABLE
   `Open_Hours` (
     `building_id` int NOT NULL,
     `day` varchar(255) NOT NULL,
-    `open_time` timestamp NOT NULL,
-    `closing_time` timestamp NOT NULL,
+    `open_time` time NOT NULL,
+    `closing_time` time NOT NULL,
     PRIMARY KEY (building_id, day, open_time, closing_time),
     FOREIGN KEY (building_id) REFERENCES Building (id) ON DELETE CASCADE
   );

@@ -30,6 +30,7 @@ export interface Booking {
   start_time: Date;
   end_time: Date;
   date: Date;
+  participants: number | null;
   room_id: number;
   building_id: number;
   user_id: number;
@@ -80,3 +81,12 @@ export interface UserNotificationPreference {
   notify_by_mail: number;
   notify_by_text: number;
 }
+
+export type ScheduleBooking = {
+  booking_id: string;
+  start_time: string;
+  end_time: string;
+  purpose: string | null;
+};
+
+export type DayOpenHours = { open_time: string; closing_time: string } | null;

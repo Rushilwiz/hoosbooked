@@ -25,7 +25,28 @@ export const POST = auth(async (req) => {
   const roomId = parseInteger(body.roomId ?? body.room_id);
   const buildingId = parseInteger(body.buildingId ?? body.building_id);
 
-  const { date, startTime, start_time, endTime, end_time, purpose } = body;
+  const {
+    date,
+    participants,
+    startTime,
+    start_time,
+    endTime,
+    end_time,
+    purpose,
+  } = body;
+
+  console.log({
+    body,
+    roomId,
+    buildingId,
+    date,
+    participants,
+    startTime,
+    start_time,
+    endTime,
+    end_time,
+    purpose,
+  });
 
   if (roomId === null) return badRequest("roomId is required");
   if (buildingId === null) return badRequest("buildingId is required");
@@ -46,6 +67,7 @@ export const POST = auth(async (req) => {
       startTime ?? start_time,
       endTime ?? end_time,
       date,
+      typeof participants === "number" ? participants : null,
       roomId,
       buildingId,
       userId,
@@ -53,7 +75,6 @@ export const POST = auth(async (req) => {
 
     return NextResponse.json(
       {
-        bookingId,
         booking_id: bookingId,
       },
       { status: 201 },

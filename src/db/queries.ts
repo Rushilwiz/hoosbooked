@@ -12,7 +12,9 @@ import type {
   Rating,
   Notification,
   OpenHours,
-} from "../types/db";
+  ScheduleBooking,
+  DayOpenHours,
+} from "@/types/db";
 
 // `User` (
 //   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -342,7 +344,7 @@ export const updateRoom = async (
 
 export const getBookingsByUserId = async (userId: number) => {
   const [rows] = await pool.execute<Booking & RowDataPacket[]>(
-    "SELECT booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id FROM Booking WHERE user_id = ?",
+    "SELECT booking_id, purpose, start_time, end_time, date, participants, room_id, building_id, user_id FROM Booking WHERE user_id = ?",
     [userId],
   );
   return rows;
@@ -350,7 +352,7 @@ export const getBookingsByUserId = async (userId: number) => {
 
 export const getBookingById = async (bookingId: string) => {
   const [rows] = await pool.execute<Booking & RowDataPacket[]>(
-    "SELECT booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id FROM Booking WHERE booking_id = ?",
+    "SELECT booking_id, purpose, start_time, end_time, date, participants, room_id, building_id, user_id FROM Booking WHERE booking_id = ?",
     [bookingId],
   );
   return rows[0] ?? null;
@@ -366,14 +368,24 @@ export const updateBooking = async (
   startTime: string,
   endTime: string,
   date: string,
+  participants: number | null,
   roomId: number,
   buildingId: number,
 ) => {
   await pool.execute(
     `UPDATE Booking
-     SET purpose = ?, start_time = ?, end_time = ?, date = ?, room_id = ?, building_id = ?
+     SET purpose = ?, start_time = ?, end_time = ?, date = ?, participants = ?, room_id = ?, building_id = ?
      WHERE booking_id = ?`,
-    [purpose ?? null, startTime, endTime, date, roomId, buildingId, bookingId],
+    [
+      purpose ?? null,
+      startTime,
+      endTime,
+      date,
+      participants ?? null,
+      roomId,
+      buildingId,
+      bookingId,
+    ],
   );
 };
 
@@ -383,19 +395,21 @@ export const createBooking = async (
   startTime: string,
   endTime: string,
   date: string,
+  participants: number | null,
   roomId: number,
   buildingId: number,
   userId: number,
 ) => {
   await pool.execute(
-    `INSERT INTO Booking (booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO Booking (booking_id, purpose, start_time, end_time, date, participants, room_id, building_id, user_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       bookingId,
       purpose ?? null,
       startTime,
       endTime,
       date,
+      participants ?? null,
       roomId,
       buildingId,
       userId,
@@ -489,6 +503,95 @@ export const deleteOpenHours = async (buildingId: number, day: string) => {
     "DELETE FROM Open_Hours WHERE building_id = ? AND day = ?",
     [buildingId, day],
   );
+};
+
+export const getRoomsFiltered = async (
+  buildingId: number,
+  filters: { minCapacity?: number; amenityIds?: number[] } = {},
+) => {
+  const params: (string | number)[] = [buildingId];
+  let query = `SELECT r.id, r.number, r.building_id, r.capacity FROM Room r WHERE r.building_id = ?`;
+
+  if (filters.minCapacity != null) {
+    query += ` AND r.capacity >= ?`;
+    params.push(filters.minCapacity);
+  }
+
+  if (filters.amenityIds && filters.amenityIds.length > 0) {
+    const placeholders = filters.amenityIds.map(() => "?").join(",");
+    query += ` AND (SELECT COUNT(DISTINCT ra.amenity_id) FROM Room_Amenity ra WHERE ra.room_id = r.id AND ra.building_id = r.building_id AND ra.amenity_id IN (${placeholders})) = ?`;
+    params.push(...filters.amenityIds, filters.amenityIds.length);
+  }
+
+  const [rows] = await pool.execute<(Room & RowDataPacket)[]>(query, params);
+  return rows;
+};
+
+export const getAmenitiesForRooms = async (
+  buildingId: number,
+  roomIds: number[],
+) => {
+  if (roomIds.length === 0) return [];
+  const placeholders = roomIds.map(() => "?").join(",");
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT ra.room_id, a.id, a.name, a.description FROM Room_Amenity ra JOIN Amenity a ON a.id = ra.amenity_id WHERE ra.building_id = ? AND ra.room_id IN (${placeholders})`,
+    [buildingId, ...roomIds],
+  );
+  return rows as {
+    room_id: number;
+    id: number;
+    name: string;
+    description: string | null;
+  }[];
+};
+
+export const getBookingsByRoomAndDate = async (
+  roomId: number,
+  buildingId: number,
+  date: string,
+): Promise<ScheduleBooking[]> => {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT booking_id,
+            TIME_FORMAT(TIME(start_time), '%H:%i') AS start_time,
+            TIME_FORMAT(TIME(end_time),   '%H:%i') AS end_time,
+            purpose
+     FROM Booking
+     WHERE room_id = ? AND building_id = ? AND DATE= ?
+     ORDER BY start_time`,
+    [roomId, buildingId, date],
+  );
+  return rows as ScheduleBooking[];
+};
+
+export const getOpenHoursForDay = async (
+  buildingId: number,
+  day: string,
+): Promise<DayOpenHours> => {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT TIME_FORMAT(TIME(open_time),    '%H:%i') AS open_time,
+            TIME_FORMAT(TIME(closing_time), '%H:%i') AS closing_time
+     FROM Open_Hours
+     WHERE building_id = ? AND day = ?
+     LIMIT 1`,
+    [buildingId, day],
+  );
+  return (rows[0] as DayOpenHours) ?? null;
+};
+
+export const getBookedRoomIds = async (
+  buildingId: number,
+  roomIds: number[],
+  date: string,
+  startTime: string,
+  endTime: string,
+) => {
+  if (roomIds.length === 0) return new Set<number>();
+  const placeholders = roomIds.map(() => "?").join(",");
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT DISTINCT b.room_id FROM Booking b WHERE b.building_id = ? AND b.room_id IN (${placeholders}) AND DATE(b.date) = ? AND TIME(b.start_time) < ? AND TIME(b.end_time) > ?`,
+    [buildingId, ...roomIds, date, endTime, startTime],
+  );
+  return new Set((rows as { room_id: number }[]).map((r) => r.room_id));
 };
 
 // `Rating` (
