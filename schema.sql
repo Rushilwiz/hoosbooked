@@ -116,7 +116,7 @@ CREATE TABLE
 
 CREATE TABLE
   `User_Email` (
-    `user_id` int NOT NULL,
+    `user_id` int NOT NULL UNIQUE,
     `email` varchar(255) NOT NULL,
     PRIMARY KEY (`user_id`, `email`),
     FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE
@@ -124,7 +124,7 @@ CREATE TABLE
 
 CREATE TABLE
   `User_PhoneNumber` (
-    `user_id` int NOT NULL,
+    `user_id` int NOT NULL UNIQUE,
     `phone` varchar(20) NOT NULL,
     PRIMARY KEY (`user_id`, `phone`),
     FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE

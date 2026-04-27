@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 
-const PUBLIC_PATHS = ["/login", "/register"];
+const PUBLIC_PATHS = ["/login", "/register", "/kiosk", "/api/kiosk"];
 
 export default {
   providers: [],
