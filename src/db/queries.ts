@@ -602,6 +602,19 @@ export const getOpenHoursForDay = async (
   return (rows[0] as DayOpenHours) ?? null;
 };
 
+export const getCurrentBookingForRoom = async (roomId: number) => {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT b.booking_id, b.purpose, b.start_time, b.end_time, b.participants, b.user_id
+     FROM Booking b
+     WHERE b.room_id = ?
+       AND TIME(b.start_time) <= (UTC_TIMESTAMP() - INTERVAL 4 HOUR)
+       AND TIME(b.end_time)   >  (UTC_TIMESTAMP() - INTERVAL 4 HOUR)
+     LIMIT 1;`,
+    [roomId],
+  );
+  return rows[0] ?? null;
+};
+
 export const getBookedRoomIds = async (
   buildingId: number,
   roomIds: number[],

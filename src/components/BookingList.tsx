@@ -9,11 +9,10 @@ interface Props {
 export default async function BookingList({ bookings }: Props) {
   console.log("User bookings:", bookings);
 
-  // omit all bookings before present date
   const now = new Date();
 
   const upcomingBookings = bookings
-    .filter((b) => new Date(b.start_time) >= now)
+    .filter((b) => new Date(b.end_time) >= now)
     .sort(
       (a, b) =>
         new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
@@ -101,7 +100,11 @@ export default async function BookingList({ bookings }: Props) {
                         href={`/booking/confirmation?booking_id=${booking.booking_id}`}
                         className="mt-4 w-full py-2 bg-[#232D4B] text-white text-sm font-medium rounded hover:bg-[#1a2138] transition flex items-center justify-center gap-2"
                       >
-                        <span>Check In</span>
+                        <span>
+                          {!(booking.end_time > now && booking.start_time < now)
+                            ? "Check In"
+                            : "View Reservation Details"}
+                        </span>
                       </a>
                     ) : (
                       <>
