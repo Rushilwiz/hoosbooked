@@ -1,29 +1,31 @@
 import { NextResponse } from "next/server";
 import { deleteBooking, getBookingById, updateBooking } from "@/db/queries";
-import {
-  badRequest,
-  notFound,
-  parseInteger,
-  readJson,
-  type RouteContext,
-} from "../../_utils";
+import { badRequest, notFound, parseInteger, readJson } from "../../_utils";
+import { auth } from "@/auth";
 
-async function bookingId(context: RouteContext) {
-  const { id } = await context.params;
-  return id;
-}
+export const GET = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+    
+    const { id } = await params;
 
-export async function GET(_req: Request, context: RouteContext) {
-  const id = await bookingId(context);
+    const booking = await getBookingById(id);
+    if (!booking) return notFound("booking not found");
 
-  const booking = await getBookingById(id);
-  if (!booking) return notFound("booking not found");
+    return NextResponse.json(booking);
+  },
+);
 
-  return NextResponse.json(booking);
-}
+export const PUT = auth(async (req, { params }: { params: Promise<{ id: string }> }) => {
+  const userId = Number(req.auth?.user?.id);
+  if (!req.auth || !userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
 
-export async function PUT(req: Request, context: RouteContext) {
-  const id = await bookingId(context);
+  const { id } = await params;
 
   const body = await readJson(req);
 
@@ -54,16 +56,21 @@ export async function PUT(req: Request, context: RouteContext) {
     endTime ?? end_time,
     date,
     roomId,
-    buildingId
+    buildingId,
   );
 
   return NextResponse.json(await getBookingById(id));
-}
+});
 
 export const PATCH = PUT;
 
-export async function DELETE(_req: Request, context: RouteContext) {
-  const id = await bookingId(context);
+export const DELETE = auth(async (req, { params }: { params: Promise<{ id: string }> }) => {
+  const userId = Number(req.auth?.user?.id);
+  if (!req.auth || !userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const { id } = await params;
 
   const existing = await getBookingById(id);
   if (!existing) return notFound("booking not found");
@@ -71,4 +78,4 @@ export async function DELETE(_req: Request, context: RouteContext) {
   await deleteBooking(id);
 
   return new NextResponse(null, { status: 204 });
-}
+});

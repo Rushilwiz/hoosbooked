@@ -5,79 +5,98 @@ import {
   getOpenHoursByBuildingId,
   setOpenHours,
 } from "@/db/queries";
-import {
-  badRequest,
-  notFound,
-  parseIdParam,
-  readJson,
-  type RouteContext,
-} from "../../../_utils";
+import { badRequest, notFound, parseInteger, readJson } from "../../../_utils";
+import { auth } from "@/auth";
 
-export async function GET(_req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid building id");
+export const GET = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  const building = await getBuildingById(id);
-  if (!building) return notFound("building not found");
+    const { id } = await params;
+    const buildingId = parseInteger(id);
+    if (buildingId === null) return badRequest("invalid building id");
 
-  const hours = await getOpenHoursByBuildingId(id);
+    const building = await getBuildingById(buildingId);
+    if (!building) return notFound("building not found");
 
-  return NextResponse.json(hours);
-}
+    const hours = await getOpenHoursByBuildingId(buildingId);
 
-export async function PUT(req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid building id");
+    return NextResponse.json(hours);
+  },
+);
 
-  const { day, openTime, open_time, closingTime, closing_time } =
-    await readJson(req);
+export const PUT = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  if (typeof day !== "string" || day.trim().length === 0) {
-    return badRequest("day is required");
-  }
+    const { id } = await params;
+    const buildingId = parseInteger(id);
+    if (buildingId === null) return badRequest("invalid building id");
 
-  if (typeof (openTime ?? open_time) !== "string") {
-    return badRequest("openTime is required");
-  }
+    const { day, openTime, open_time, closingTime, closing_time } =
+      await readJson(req);
 
-  if (typeof (closingTime ?? closing_time) !== "string") {
-    return badRequest("closingTime is required");
-  }
+    if (typeof day !== "string" || day.trim().length === 0) {
+      return badRequest("day is required");
+    }
 
-  const building = await getBuildingById(id);
-  if (!building) return notFound("building not found");
+    if (typeof (openTime ?? open_time) !== "string") {
+      return badRequest("openTime is required");
+    }
 
-  await setOpenHours(
-    id,
-    day.trim(),
-    openTime ?? open_time,
-    closingTime ?? closing_time
-  );
+    if (typeof (closingTime ?? closing_time) !== "string") {
+      return badRequest("closingTime is required");
+    }
 
-  return NextResponse.json({
-    building_id: id,
-    day: day.trim(),
-    open_time: openTime ?? open_time,
-    closing_time: closingTime ?? closing_time,
-  });
-}
+    const building = await getBuildingById(buildingId);
+    if (!building) return notFound("building not found");
+
+    await setOpenHours(
+      buildingId,
+      day.trim(),
+      openTime ?? open_time,
+      closingTime ?? closing_time,
+    );
+
+    return NextResponse.json({
+      building_id: buildingId,
+      day: day.trim(),
+      open_time: openTime ?? open_time,
+      closing_time: closingTime ?? closing_time,
+    });
+  },
+);
 
 export const POST = PUT;
 export const PATCH = PUT;
 
-export async function DELETE(req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid building id");
+export const DELETE = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  const url = new URL(req.url);
-  const body = await readJson(req);
-  const day = body.day ?? url.searchParams.get("day");
+    const { id } = await params;
+    const buildingId = parseInteger(id);
+    if (buildingId === null) return badRequest("invalid building id");
 
-  if (typeof day !== "string" || day.trim().length === 0) {
-    return badRequest("day is required");
-  }
+    const url = new URL(req.url);
+    const body = await readJson(req);
+    const day = body.day ?? url.searchParams.get("day");
 
-  await deleteOpenHours(id, day.trim());
+    if (typeof day !== "string" || day.trim().length === 0) {
+      return badRequest("day is required");
+    }
 
-  return new NextResponse(null, { status: 204 });
-}
+    await deleteOpenHours(buildingId, day.trim());
+
+    return new NextResponse(null, { status: 204 });
+  },
+);

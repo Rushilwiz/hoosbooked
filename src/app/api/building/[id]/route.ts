@@ -1,59 +1,78 @@
 import { NextResponse } from "next/server";
 import { deleteBuilding, getBuildingById, updateBuilding } from "@/db/queries";
-import {
-  badRequest,
-  notFound,
-  parseIdParam,
-  readJson,
-  type RouteContext,
-} from "../../_utils";
+import { badRequest, notFound, parseInteger, readJson } from "../../_utils";
+import { auth } from "@/auth";
 
-export async function GET(_req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid building id");
+export const GET = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  const building = await getBuildingById(id);
-  if (!building) return notFound("building not found");
+    const { id } = await params;
+    const buildingId = parseInteger(id);
+    if (buildingId === null) return badRequest("invalid building id");
 
-  return NextResponse.json(building);
-}
+    const building = await getBuildingById(buildingId);
+    if (!building) return notFound("building not found");
 
-export async function PUT(req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid building id");
+    return NextResponse.json(building);
+  },
+);
 
-  const { name, address } = await readJson(req);
+export const PUT = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  if (typeof name !== "string" || name.trim().length === 0) {
-    return badRequest("name is required");
-  }
+    const { id } = await params;
+    const buildingId = parseInteger(id);
+    if (buildingId === null) return badRequest("invalid building id");
 
-  if (typeof address !== "string" || address.trim().length === 0) {
-    return badRequest("address is required");
-  }
+    const { name, address } = await readJson(req);
 
-  const existing = await getBuildingById(id);
-  if (!existing) return notFound("building not found");
+    if (typeof name !== "string" || name.trim().length === 0) {
+      return badRequest("name is required");
+    }
 
-  await updateBuilding(id, name.trim(), address.trim());
+    if (typeof address !== "string" || address.trim().length === 0) {
+      return badRequest("address is required");
+    }
 
-  return NextResponse.json({
-    id,
-    name: name.trim(),
-    address: address.trim(),
-  });
-}
+    const existing = await getBuildingById(buildingId);
+    if (!existing) return notFound("building not found");
+
+    await updateBuilding(buildingId, name.trim(), address.trim());
+
+    return NextResponse.json({
+      id,
+      name: name.trim(),
+      address: address.trim(),
+    });
+  },
+);
 
 export const PATCH = PUT;
 
-export async function DELETE(_req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid building id");
+export const DELETE = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  const existing = await getBuildingById(id);
-  if (!existing) return notFound("building not found");
+    const { id } = await params;
+    const buildingId = parseInteger(id);
+    if (buildingId === null) return badRequest("invalid building id");
 
-  await deleteBuilding(id);
+    const existing = await getBuildingById(buildingId);
+    if (!existing) return notFound("building not found");
 
-  return new NextResponse(null, { status: 204 });
-}
+    await deleteBuilding(buildingId);
+
+    return new NextResponse(null, { status: 204 });
+  },
+);

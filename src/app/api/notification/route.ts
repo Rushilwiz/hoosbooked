@@ -2,24 +2,28 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { createNotification, getNotificationsByUserId } from "@/db/queries";
 import { badRequest, parseInteger, readJson } from "../_utils";
+import { auth } from "@/auth";
 
-export async function GET(req: Request) {
-  const userId = parseInteger(new URL(req.url).searchParams.get("userId"));
-
-  if (userId === null) {
-    return badRequest("userId query parameter is required");
+export const GET = auth(async (req) => {
+  const id = Number(req.auth?.user?.id);
+  if (!req.auth || !id) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const notifications = await getNotificationsByUserId(userId);
+  const notifications = await getNotificationsByUserId(id);
 
   return NextResponse.json(notifications);
-}
+});
 
-export async function POST(req: Request) {
-  const { userId, user_id, message } = await readJson(req);
+export const POST = auth(async (req) => {
+  const userId = Number(req.auth?.user?.id);
+  if (!req.auth || !userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
 
-  const user = parseInteger(userId ?? user_id);
+  const { reqUserId, message } = await readJson(req);
 
+  const user = parseInteger(reqUserId ?? userId);
   if (user === null) return badRequest("userId is required");
 
   if (typeof message !== "string" || message.trim().length === 0) {
@@ -37,6 +41,6 @@ export async function POST(req: Request) {
       message: message.trim(),
       viewed: 0,
     },
-    { status: 201 }
+    { status: 201 },
   );
-}
+});

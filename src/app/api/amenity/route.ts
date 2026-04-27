@@ -1,13 +1,24 @@
 import { NextResponse } from "next/server";
 import { createAmenity, getAllAmenities } from "@/db/queries";
 import { badRequest, readJson } from "../_utils";
+import { auth } from "@/auth";
 
-export async function GET() {
+export const GET = auth(async (req) => {
+  const userId = Number(req.auth?.user?.id);
+  if (!req.auth || !userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
   const amenities = await getAllAmenities();
   return NextResponse.json(amenities);
-}
+});
 
-export async function POST(req: Request) {
+export const POST = auth(async (req) => {
+  const userId = Number(req.auth?.user?.id);
+  if (!req.auth || !userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
   const { name, description } = await readJson(req);
 
   if (typeof name !== "string" || name.trim().length === 0) {
@@ -30,6 +41,6 @@ export async function POST(req: Request) {
       name: name.trim(),
       description: description ?? null,
     },
-    { status: 201 }
+    { status: 201 },
   );
-}
+});

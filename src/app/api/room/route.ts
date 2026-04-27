@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { createRoom } from "@/db/queries";
 import { badRequest, parseInteger, readJson } from "../_utils";
+import { auth } from "@/auth";
 
-export async function POST(req: Request) {
+export const POST = auth(async (req: Request) => {
   const { number, buildingId, building_id, capacity } = await readJson(req);
 
   const roomNumber = parseInteger(number);
@@ -22,6 +23,6 @@ export async function POST(req: Request) {
       building_id: building,
       capacity: roomCapacity,
     },
-    { status: 201 }
+    { status: 201 },
   );
-}
+});

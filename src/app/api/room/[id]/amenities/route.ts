@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import {
   addAmenityToRoom,
@@ -6,74 +7,91 @@ import {
   getRoomById,
   removeAmenityFromRoom,
 } from "@/db/queries";
-import {
-  badRequest,
-  notFound,
-  parseIdParam,
-  parseInteger,
-  readJson,
-  type RouteContext,
-} from "../../../_utils";
+import { badRequest, notFound, parseInteger, readJson } from "../../../_utils";
 
-export async function GET(_req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid room id");
+export const GET = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  const room = await getRoomById(id);
-  if (!room) return notFound("room not found");
+    const { id } = await params;
+    const roomId = parseInteger(id);
+    if (roomId === null) return badRequest("invalid room id");
 
-  const amenities = await getAmenityByRoomId(room.id, room.building_id);
+    const room = await getRoomById(roomId);
+    if (!room) return notFound("room not found");
 
-  return NextResponse.json(amenities);
-}
+    const amenities = await getAmenityByRoomId(room.id, room.building_id);
 
-export async function POST(req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid room id");
+    return NextResponse.json(amenities);
+  },
+);
 
-  const { amenityId, amenity_id } = await readJson(req);
-  const amenity = parseInteger(amenityId ?? amenity_id);
+export const POST = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  if (amenity === null) return badRequest("amenityId is required");
+    const { id } = await params;
+    const roomId = parseInteger(id);
+    if (roomId === null) return badRequest("invalid room id");
 
-  const room = await getRoomById(id);
-  if (!room) return notFound("room not found");
+    const { amenityId, amenity_id } = await readJson(req);
+    const amenity = parseInteger(amenityId ?? amenity_id);
 
-  const existingAmenity = await getAmenityById(amenity);
-  if (!existingAmenity) return notFound("amenity not found");
+    if (amenity === null) return badRequest("amenityId is required");
 
-  await addAmenityToRoom(room.id, room.building_id, amenity);
+    const room = await getRoomById(roomId);
+    if (!room) return notFound("room not found");
 
-  return NextResponse.json(
-    {
-      room_id: room.id,
-      building_id: room.building_id,
-      amenity_id: amenity,
-    },
-    { status: 201 }
-  );
-}
+    const existingAmenity = await getAmenityById(amenity);
+    if (!existingAmenity) return notFound("amenity not found");
 
-export async function DELETE(req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid room id");
+    await addAmenityToRoom(room.id, room.building_id, amenity);
 
-  const url = new URL(req.url);
-  const body = await readJson(req);
+    return NextResponse.json(
+      {
+        room_id: room.id,
+        building_id: room.building_id,
+        amenity_id: amenity,
+      },
+      { status: 201 },
+    );
+  },
+);
 
-  const amenity = parseInteger(
-    body.amenityId ??
-      body.amenity_id ??
-      url.searchParams.get("amenityId") ??
-      url.searchParams.get("amenity_id")
-  );
+export const DELETE = auth(
+  async (req, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = Number(req.auth?.user?.id);
+    if (!req.auth || !userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-  if (amenity === null) return badRequest("amenityId is required");
+    const { id } = await params;
+    const roomId = parseInteger(id);
+    if (roomId === null) return badRequest("invalid room id");
 
-  const room = await getRoomById(id);
-  if (!room) return notFound("room not found");
+    const url = new URL(req.url);
+    const body = await readJson(req);
 
-  await removeAmenityFromRoom(room.id, room.building_id, amenity);
+    const amenity = parseInteger(
+      body.amenityId ??
+        body.amenity_id ??
+        url.searchParams.get("amenityId") ??
+        url.searchParams.get("amenity_id"),
+    );
 
-  return new NextResponse(null, { status: 204 });
-}
+    if (amenity === null) return badRequest("amenityId is required");
+
+    const room = await getRoomById(roomId);
+    if (!room) return notFound("room not found");
+
+    await removeAmenityFromRoom(room.id, room.building_id, amenity);
+
+    return new NextResponse(null, { status: 204 });
+  },
+);

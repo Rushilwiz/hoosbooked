@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import {
   getUserNotificationPreferenceByUserId,
@@ -6,24 +7,26 @@ import {
 import {
   badRequest,
   notFound,
-  parseIdParam,
   readJson,
-  type RouteContext,
-} from "../../../_utils";
+} from "../../_utils";
 
-export async function GET(_req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid user id");
+export const GET = auth(async function GET(req) {
+  const id = Number(req.auth?.user?.id);
+  if (!req.auth || !id) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
 
   const preference = await getUserNotificationPreferenceByUserId(id);
   if (!preference) return notFound("notification preference not found");
 
   return NextResponse.json(preference);
-}
+});
 
-export async function PUT(req: Request, context: RouteContext) {
-  const id = await parseIdParam(context);
-  if (id === null) return badRequest("invalid user id");
+export const PUT = auth(async function PUT(req) {
+  const id = Number(req.auth?.user?.id);
+  if (!req.auth || !id) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
 
   const { notifyByMail, notify_by_mail, notifyByText, notify_by_text } =
     await readJson(req);
@@ -34,14 +37,15 @@ export async function PUT(req: Request, context: RouteContext) {
   if (typeof mail !== "boolean") return badRequest("notifyByMail is required");
   if (typeof text !== "boolean") return badRequest("notifyByText is required");
 
-  await setUserNotificationPreference(id, mail, text);
+  const resId = await setUserNotificationPreference(id, mail, text);
 
   return NextResponse.json({
+    id: resId,
     user_id: id,
     notify_by_mail: mail ? 1 : 0,
     notify_by_text: text ? 1 : 0,
   });
-}
+});
 
 export const POST = PUT;
 export const PATCH = PUT;

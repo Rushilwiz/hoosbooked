@@ -1,13 +1,23 @@
 import { NextResponse } from "next/server";
 import { createBuilding, getAllBuildings } from "@/db/queries";
 import { badRequest, readJson } from "../_utils";
+import { auth } from "@/auth";
 
-export async function GET() {
+export const GET = auth(async (req) => {
+  const userId = Number(req.auth?.user?.id);
+  if (!req.auth || !userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
   const buildings = await getAllBuildings();
   return NextResponse.json(buildings);
-}
+});
 
-export async function POST(req: Request) {
+export const POST = auth(async (req) => {
+  const userId = Number(req.auth?.user?.id);
+  if (!req.auth || !userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
   const { name, address } = await readJson(req);
 
   if (typeof name !== "string" || name.trim().length === 0) {
@@ -26,6 +36,6 @@ export async function POST(req: Request) {
       name: name.trim(),
       address: address.trim(),
     },
-    { status: 201 }
+    { status: 201 },
   );
-}
+});
