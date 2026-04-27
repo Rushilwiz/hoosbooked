@@ -367,7 +367,7 @@ export const updateRoom = async (
 // );
 
 export const getBookingsByUserId = async (userId: number) => {
-  const [rows] = await pool.execute<Booking & RowDataPacket[]>(
+  const [rows] = await pool.execute<(Booking & RowDataPacket)[]>(
     "SELECT booking_id, purpose, start_time, end_time, date, participants, room_id, building_id, user_id FROM Booking WHERE user_id = ?",
     [userId],
   );
