@@ -14,6 +14,7 @@ import type {
   OpenHours,
   ScheduleBooking,
   DayOpenHours,
+  BuildingCoordinates,
 } from "@/types/db";
 
 // `User` (
@@ -275,6 +276,29 @@ export const updateBuilding = async (
     address,
     id,
   ]);
+};
+
+// `Building_Coordinates` (
+//   `building_id` int NOT NULL,
+//   `latitude` decimal(10, 8) NOT NULL,
+//   `longitude` decimal(11, 8) NOT NULL,
+//   PRIMARY KEY (building_id),
+//   FOREIGN KEY (building_id) REFERENCES Building (id) ON DELETE CASCADE
+// );
+
+export const getCoordinatesByBuildingId = async (buildingId: number) => {
+  const [rows] = await pool.execute<BuildingCoordinates & RowDataPacket[]>(
+    "SELECT building_id, latitude, longitude FROM Building_Coordinates WHERE building_id = ?",
+    [buildingId],
+  );
+  return rows[0] ?? null;
+};
+
+export const getAllBuildingCoordinates = async () => {
+  const [rows] = await pool.query(
+    "SELECT building_id, latitude, longitude FROM Building_Coordinates",
+  );
+  return rows as BuildingCoordinates[];
 };
 
 // `Room` (

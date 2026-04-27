@@ -17,6 +17,12 @@ export interface Building {
   address: string;
 }
 
+export interface BuildingCoordinates {
+  building_id: number;
+  latitude: number;
+  longitude: number;
+}
+
 export interface Room {
   id: number;
   number: number;

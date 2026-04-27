@@ -26,6 +26,15 @@ CREATE TABLE
   );
 
 CREATE TABLE
+  `Building_Coordinates` (
+    `building_id` int NOT NULL,
+    `latitude` decimal(10, 8) NOT NULL,
+    `longitude` decimal(11, 8) NOT NULL,
+    PRIMARY KEY (building_id),
+    FOREIGN KEY (building_id) REFERENCES Building (id) ON DELETE CASCADE
+  );
+
+CREATE TABLE
   `Room` (
     `id` int NOT NULL AUTO_INCREMENT,
     `number` varchar(255) NULL,

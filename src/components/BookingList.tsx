@@ -70,7 +70,10 @@ export default async function BookingList({ bookings }: Props) {
                         }`
                       : `Building ${booking.building_id}, Room ${booking.room_id}`}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-600 mt-1">
+                    {booking.purpose || "No purpose provided"}
+                  </p>
+                  <p className="text-sm italic text-gray-500 mt-1">
                     {isToday
                       ? "Today"
                       : new Date(booking.start_time).toLocaleDateString(
@@ -92,7 +95,7 @@ export default async function BookingList({ bookings }: Props) {
                           hour12: true,
                         })}
                   </p>
-                  <div className="mt-4 flex gap-4 text-sm font-medium">
+                  <div className="flex gap-4 text-sm font-medium">
                     {isToday ? (
                       <a
                         href={`/booking/confirmation?booking_id=${booking.booking_id}`}
