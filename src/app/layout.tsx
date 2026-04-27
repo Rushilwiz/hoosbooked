@@ -58,9 +58,11 @@ export default async function RootLayout({
                   </g>
                 </g>
               </svg>
-              <h1 className="text-xl font-semibold tracking-wide">
-                HoosBooked?
-              </h1>
+              <a href="/">
+                <h1 className="text-xl font-semibold tracking-wide">
+                  HoosBooked?
+                </h1>
+              </a>
             </div>
 
             <div className="flex items-center gap-3">
@@ -84,9 +86,11 @@ export default async function RootLayout({
               {session?.user && (
                 <div className="flex items-center gap-3 pl-4 border-l border-white/20">
                   <div className="text-right hidden sm:block">
-                    <p className="text-sm font-medium leading-none">
-                      {session.user.username}
-                    </p>
+                    <a href="/user">
+                      <p className="text-sm font-medium leading-none">
+                        {session.user.username}
+                      </p>
+                    </a>
                     <p className="text-xs text-gray-400">Student</p>
                   </div>
                   <div className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center text-[#232D4B] font-bold">
