@@ -22,6 +22,14 @@ import type {
 //   PRIMARY KEY (`id`),
 // );
 
+export const getUserById = async (id: number) => {
+  const [rows] = await pool.execute<(User & RowDataPacket)[]>(
+    "SELECT id, username, password, created_at FROM `User` WHERE id = ? LIMIT 1",
+    [id],
+  );
+  return rows[0] ?? null;
+};
+
 export const getUserByUsername = async (username: string) => {
   const [rows] = await pool.execute<(User & RowDataPacket)[]>(
     "SELECT id, username, password, created_at FROM `User` WHERE username = ? LIMIT 1",
@@ -66,11 +74,12 @@ export const getUserEmailByUserId = async (userId: number) => {
 };
 
 export const setUserEmail = async (userId: number, email: string) => {
-  await pool.execute(
+  const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO User_Email (user_id, email) VALUES (?, ?)
      ON DUPLICATE KEY UPDATE email = VALUES(email)`,
     [userId, email],
   );
+  return result.insertId;
 };
 
 export const deleteUserEmail = async (userId: number) => {
@@ -99,12 +108,13 @@ export const setUserNotificationPreference = async (
   notifyByMail: boolean,
   notifyByText: boolean,
 ) => {
-  await pool.execute(
+  const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO User_Notification_Preference (user_id, notify_by_mail, notify_by_text)
      VALUES (?, ?, ?)
      ON DUPLICATE KEY UPDATE notify_by_mail = VALUES(notify_by_mail), notify_by_text = VALUES(notify_by_text)`,
     [userId, notifyByMail ? 1 : 0, notifyByText ? 1 : 0],
   );
+  return result.insertId;
 };
 
 // `User_PhoneNumber` (
@@ -121,11 +131,12 @@ export const getUserPhoneNumberByUserId = async (userId: number) => {
 };
 
 export const setUserPhoneNumber = async (userId: number, phone: string) => {
-  await pool.execute(
+  const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO User_PhoneNumber (user_id, phone) VALUES (?, ?)
      ON DUPLICATE KEY UPDATE phone = VALUES(phone)`,
     [userId, phone],
   );
+  return result.insertId;
 };
 
 export const deleteUserPhoneNumber = async (userId: number) => {
@@ -202,10 +213,11 @@ export const addAmenityToRoom = async (
   buildingId: number,
   amenityId: number,
 ) => {
-  await pool.execute(
+  const [result] = await pool.execute<ResultSetHeader>(
     "INSERT INTO Room_Amenity (room_id, building_id, amenity_id) VALUES (?, ?, ?)",
     [roomId, buildingId, amenityId],
   );
+  return result.insertId;
 };
 
 export const removeAmenityFromRoom = async (
@@ -365,6 +377,34 @@ export const updateBooking = async (
   );
 };
 
+export const createBooking = async (
+  bookingId: string,
+  purpose: string | null,
+  startTime: string,
+  endTime: string,
+  date: string,
+  roomId: number,
+  buildingId: number,
+  userId: number,
+) => {
+  await pool.execute(
+    `INSERT INTO Booking (booking_id, purpose, start_time, end_time, date, room_id, building_id, user_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      bookingId,
+      purpose ?? null,
+      startTime,
+      endTime,
+      date,
+      roomId,
+      buildingId,
+      userId,
+    ],
+  );
+
+  return bookingId;
+};
+
 // `Notifications` (
 //   `notification_id` varchar(255) NOT NULL,
 //   `user_id` varchar(255) NOT NULL,
@@ -387,23 +427,31 @@ export const createNotification = async (
   userId: number,
   message: string,
 ) => {
-  await pool.execute(
+  const [result] = await pool.execute<ResultSetHeader>(
     "INSERT INTO Notifications (notification_id, user_id, message) VALUES (?, ?, ?)",
     [notificationId, userId, message],
   );
+  return result.insertId;
 };
 
-export const markNotificationAsViewed = async (notificationId: string) => {
+export const markNotificationAsViewed = async (
+  notificationId: string,
+  userId: number,
+) => {
   await pool.execute(
-    "UPDATE Notifications SET viewed = 1 WHERE notification_id = ?",
-    [notificationId],
+    "UPDATE Notifications SET viewed = 1 WHERE notification_id = ? AND user_id = ?",
+    [notificationId, userId],
   );
 };
 
-export const deleteNotification = async (notificationId: string) => {
-  await pool.execute("DELETE FROM Notifications WHERE notification_id = ?", [
-    notificationId,
-  ]);
+export const deleteNotification = async (
+  notificationId: string,
+  userId: number,
+) => {
+  await pool.execute(
+    "DELETE FROM Notifications WHERE notification_id = ? AND user_id = ?",
+    [notificationId, userId],
+  );
 };
 
 // `Open_Hours` (
@@ -427,12 +475,13 @@ export const setOpenHours = async (
   openTime: string,
   closingTime: string,
 ) => {
-  await pool.execute(
+  const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO Open_Hours (building_id, day, open_time, closing_time)
      VALUES (?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE open_time = VALUES(open_time), closing_time = VALUES(closing_time)`,
     [buildingId, day, openTime, closingTime],
   );
+  return result.insertId;
 };
 
 export const deleteOpenHours = async (buildingId: number, day: string) => {
@@ -478,7 +527,12 @@ export const createRating = async (
 };
 
 export const deleteRating = async (id: number) => {
-  await pool.execute("DELETE FROM Rating WHERE id = ?", [id]);
+  const [result] = await pool.execute<ResultSetHeader>(
+    "DELETE FROM Rating WHERE id = ?",
+    [id],
+  );
+
+  return result.affectedRows > 0;
 };
 
 export const updateRating = async (
@@ -493,4 +547,17 @@ export const updateRating = async (
     "UPDATE Rating SET room_id = ?, building_id = ?, user_id = ?, value = ?, description = ? WHERE id = ?",
     [roomId, buildingId, userId, value, description ?? null, id],
   );
+};
+
+// check if a user has already rated a room
+export const checkRatingExists = async (
+  roomId: number,
+  buildingId: number,
+  userId: number,
+) => {
+  const [rows] = await pool.execute<Rating & RowDataPacket[]>(
+    "SELECT id FROM Rating WHERE room_id = ? AND building_id = ? AND user_id = ?",
+    [roomId, buildingId, userId],
+  );
+  return (rows ?? []).length > 0;
 };
